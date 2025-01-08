@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Calendar as CalendarIcon, Upload, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -47,6 +47,7 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,6 +56,10 @@ export default function RegisterPage() {
     }
   });
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsProcessing(true);
@@ -62,20 +67,21 @@ export default function RegisterPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Your submission logic here
-      
       toast({
         title: "Success!",
         description: "Registration submitted successfully",
-        variant: "default"
+        variant: "default",
+        open: true
       });
 
       // Optional: redirect after success
       // router.push('/success');
     } catch (error) {
       toast({
-        title: "Error",
+        title: "Error", 
         description: "Something went wrong with your registration",
-        variant: "destructive"
+        variant: "destructive",
+        open: true
       });
     } finally {
       setIsProcessing(false);
@@ -145,7 +151,7 @@ export default function RegisterPage() {
                             !field.value && 'text-muted-foreground'
                           )}
                         >
-                          {field.value ? (
+                          {mounted && field.value ? (
                             format(field.value, 'PPP')
                           ) : (
                             <span>Pick a date</span>
@@ -155,15 +161,17 @@ export default function RegisterPage() {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date('1900-01-01')
-                        }
-                        initialFocus
-                      />
+                      {mounted && (
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date('1900-01-01')
+                          }
+                          initialFocus
+                        />
+                      )}
                     </PopoverContent>
                   </Popover>
                   <FormMessage />
