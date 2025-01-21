@@ -63,10 +63,32 @@ export default function RegisterPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsProcessing(true);
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Your submission logic here
+
+      // Create FormData for file uploads
+      const formData = new FormData();
+      formData.append('firstName', values.firstName);
+      formData.append('middleName', values.middleName || '');
+      formData.append('lastName', values.lastName);
+      formData.append('email', values.email);
+      formData.append('phone', values.phone);
+      formData.append('dateOfBirth', values.dateOfBirth.toISOString());
+      formData.append('address', values.address);
+      formData.append('photo', values.photo[0]);
+      formData.append('idDocument', values.idDocument[0]);
+
+      // Send the registration data to your API
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
+
+      const data = await response.json();
+
       toast({
         title: "Success!",
         description: "Registration submitted successfully",
@@ -74,12 +96,14 @@ export default function RegisterPage() {
         open: true
       });
 
-      // Optional: redirect after success
-      // router.push('/success');
+      // Optionally redirect to success page with the registration ID
+      // router.push(`/success?id=${data.registrationId}`);
+
     } catch (error) {
+      console.error('Registration error:', error);
       toast({
         title: "Error", 
-        description: "Something went wrong with your registration",
+        description: error instanceof Error ? error.message : "Something went wrong with your registration",
         variant: "destructive",
         open: true
       });

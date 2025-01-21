@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Clock, Shield, Activity } from 'lucide-react';
+import { testApiConnection } from './services/api';
 
 export default function Home() {
   return (
@@ -22,6 +23,13 @@ export default function Home() {
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/track">Track Your Request</Link>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                onClick={() => testApiConnection()}
+              >
+                Test API Connection
               </Button>
             </div>
           </div>
